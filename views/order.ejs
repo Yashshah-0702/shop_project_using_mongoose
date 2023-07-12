@@ -1,0 +1,24 @@
+<%-include('./layout/main.ejs') %>
+
+
+  <main>
+    <% if(orders.length<=0) {%>
+    <h1>No Products..</h1>
+    <%} else {%>
+        <ul>
+            <%orders.forEach(order=>{%>
+            <li>
+                <h1>Order ID:-<%= order._id%></h1>
+                <h4>Items</h4>
+                <ul>
+                    <%  order.products.forEach(p=>{%>
+                        <li>
+                            <%= p.product.title %> (<%= p.quantity %>)
+                        </li>
+                    <%});%>    
+                </ul>
+            </li>
+            <%});%>
+        </ul>
+    <%}%>    
+  </main>

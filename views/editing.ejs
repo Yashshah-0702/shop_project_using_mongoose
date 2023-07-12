@@ -1,0 +1,17 @@
+<%-include('./layout/main.ejs') %>
+
+
+  <main>
+    <form action="/<% if (editing) { %>edit-product<% } else { %>items<% } %>" method="post" style="text-align: center;" >
+        <label for="title">Enter Name Of Product:-</label> <br>
+        <input type="text" name="title" value="<% if(editing) {%> <%=product.title%> <%}%>"> <br> <br>
+        <label for="image">Enter Description:-</label> <br>
+        <textarea name="description" id="" cols="30" rows="4"> <% if(editing) {%> <%=product.description%> <% } %></textarea> <br> <br>
+        <label for="image">Enter Price:-</label> <br>
+        <input type="text" name="price" value="<% if(editing) {%> <%=product.price%> <%}%>"> <br> <br>
+        <% if(editing) { %>
+            <input type="hidden" value="<%= product._id%>" name="productId">
+        <% } %>
+        <button type="submit"> <%if (editing) { %> Update-Product <%} else { %> Add-Product <% }%> </button>
+    </form>
+  </main>
