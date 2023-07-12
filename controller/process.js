@@ -34,8 +34,6 @@ exports.getProduct = (req, res) => {
 exports.output = (req, res) => {
     Product.find().then((row) => {
         res.render('products', { products: row, editing: false })
-    }).then(() => {
-        console.log("Product Deleted....")
     })
         .catch(err => console.log(err))
 }
@@ -162,12 +160,11 @@ exports.postOrder = (req, res) => {
 }
 
 exports.getOrders = (req, res) => {
-   Order.find({'user.userId':req.user._id})
+    Order.find({ 'user.userId': req.user._id })
         .then(orders => {
             res.render('order', {
                 orders: orders
             })
         })
         .catch(err => console.log(err))
-    // res.render('order')
 }
