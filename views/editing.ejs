@@ -1,7 +1,7 @@
 <%-include('./layout/main.ejs') %>
 
 
-  <main>
+  <main> 
     <form action="/<% if (editing) { %>edit-product<% } else { %>items<% } %>" method="post" style="text-align: center;" >
         <label for="title">Enter Name Of Product:-</label> <br>
         <input type="text" name="title" value="<% if(editing) {%> <%=product.title%> <%}%>"> <br> <br>

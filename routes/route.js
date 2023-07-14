@@ -14,5 +14,8 @@ router.post('/delete-product',control.postDeleteProduct)
 router.get('/cart',control.getCarts)
 router.post('/cart-delete-item',control.postcartdelete)
 router.post('/create-order',control.postOrder)
+router.get('/login',control.getLogin)
+router.post('/login',control.postLogin)
+router.post('/logout',control.postLogout)
 
 module.exports =router

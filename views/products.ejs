@@ -10,12 +10,16 @@
         <h3>$ <%= prod.price %></h3>   
         <h4> <%= prod.description%></h4>
         <div style="display: flex;">
+          <%if(isAuthenticated) {%>
         <a href="/editproducts/<%= prod._id %>?edit=true"><button>Edit</button></a>
+        <%}%>
         <a href="/products/<%= prod._id %>"><button>Details</button></a>
+        <%if(isAuthenticated) {%>
         <form action="/delete-product" method="post">
           <input type="hidden" value="<%=prod._id%>" name="productId">
           <button type="submit">Delete</button>  
         </form>
+        <%}%>
       </div>
       </div>
 </div> 

@@ -6,9 +6,11 @@
     <h1><%= product.title%></h1>
     <h3><%= product.description%></h3>
     <h4><%= product.price%></h4>
+    <%if(isAuthenticated) {%>
     <form action="/cart" method="post">
       <button type="submit">Add To Cart</button>
       <input type="hidden" name="productId" value="<%= product._id%>">
     </form>
+    <%}%>
   </div>
   </main>

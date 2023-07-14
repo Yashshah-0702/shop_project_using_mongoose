@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        .heading{
-            /* color: white; */
-            background-color: aqua;
-            text-align: center;
-        }
         a{
             color: aliceblue;
             text-decoration: none;       
@@ -24,13 +19,29 @@
 </head>
 <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
     <header>
-        <h1 class="heading">EXCORP YOUR OWN DICTIONARY</h1>
-        <ul style="display: flex;background-color: green; justify-content: space-around;">
+        <div style="display: flex;justify-content: space-between; background-color: darkgreen;color: aliceblue;">
+            <h1 style="margin-left: 40px;">EXCORP:- YOUR OWN DICTIONARY</h1>
+            <div style="display: flex;">
+            <% if (!isAuthenticated) {%>
+            <a href="/login" style="margin-top: 30px; margin-right: 60px; font-size: larger;">Login</a>
+            <%} else {%>
+            <form action="/logout" method="post">
+                <button type="submit" style="margin-top: 25px; margin-right: 60px; font-size: larger;">logout</button>
+            </form>
+            <%}%>
+        </div>
+        </div>
+        <ul style="display: flex;background-color: darkslategrey; justify-content: space-around; height: 50px;">
+            <% if (isAuthenticated) {%>
             <li><a href="/">Add-Products</a></li>
+            <%}%>
             <li><a href="/products">Products</a></li>
+            <% if (isAuthenticated) {%>
             <li><a href="/cart">Cart Page</a></li>
             <li><a href="/order">Order Page</a></li>
+            <%}%>
+            <!-- <li><a href="/login">Login</a></li> -->
         </ul>
-    </header> <br> <br>
+    </header> <br> <br> <br>  <br> <br> <br>
 </body>
 </html>
