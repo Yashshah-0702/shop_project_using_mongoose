@@ -17,5 +17,7 @@ router.post('/create-order',control.postOrder)
 router.get('/login',control.getLogin)
 router.post('/login',control.postLogin)
 router.post('/logout',control.postLogout)
+router.get('/signup',control.getSignUp)
+router.post('/signup', control.postSignUp);
 
 module.exports =router

@@ -36,18 +36,6 @@ app.use(error.page)
 
 mongoose.connect(MongoUri)
 .then((result)=>{
-    User.findOne().then(user=>{
-        if(!user){
-           const user = new User({
-            name:"yash shah",
-            email:"yash@gmail.com",
-            cart:{
-                items:[]
-            }
-           })
-          return user.save()
-        }
-    })
     console.log("Connected To Database....")
     app.listen(7500)
 })

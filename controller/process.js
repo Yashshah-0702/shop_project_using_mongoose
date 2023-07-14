@@ -1,9 +1,12 @@
 const Product = require("../model/model");
 const Order = require("../model/order");
-const User = require('../model/user')
+const User = require("../model/user");
 
 exports.process = (req, res) => {
-  res.render("editing", { editing: false, isAuthenticated: req.session.isLoggedIn });
+  res.render("editing", {
+    editing: false,
+    isAuthenticated: req.session.isLoggedIn,
+  });
 };
 
 // Adding a Product (Create)
@@ -30,8 +33,10 @@ exports.getProduct = (req, res) => {
   //   res.render('details',{product:product[0]})}).catch(err=>console.log(err))
   Product.findById(prodId)
     .then((product) => {
-        
-        res.render("details", { product: product ,isAuthenticated: req.session.isLoggedIn });
+      res.render("details", {
+        product: product,
+        isAuthenticated: req.session.isLoggedIn,
+      });
     })
     .catch((err) => console.log(err));
 };
@@ -192,34 +197,63 @@ exports.getOrders = (req, res) => {
 // Session & Cookies
 // Login Page
 exports.getLogin = (req, res) => {
-    //const isLoggedIn = req.get('Cookie').split('=')[1]==='true' // getting cookie
-    // const isLoggedIn = req.session.isLoggedIn 
-    res.render("login", {
+  //const isLoggedIn = req.get('Cookie').split('=')[1]==='true' // getting cookie
+  // const isLoggedIn = req.session.isLoggedIn
+  res.render("login", {
     isAuthenticated: false,
   });
 };
 
 // postlogin
 exports.postLogin = (req, res) => {
-//   req.session.isLoggedIn = true;
+  //   req.session.isLoggedIn = true;
   //res.setHeader('Set-Cookie','LoggedIn=true') //setting a cookie
-  User.findById('64acf130b5a4a84d53b26e87')
-  .then(user=>{
-    req.session.isLoggedIn=true;
-    req.session.user=user
-    req.session.save((err)=>{
-      console.log(err)
-      res.redirect("/products");
+  User.findById("64acf130b5a4a84d53b26e87")
+    .then((user) => {
+      req.session.isLoggedIn = true;
+      req.session.user = user;
+      req.session.save((err) => {
+        console.log(err);
+        res.redirect("/products");
+      });
     })
-    
-  })
-  .catch(err=>console.log(err))
+    .catch((err) => console.log(err));
 };
 
 // Deleteing a Cookie
-exports.postLogout=(req,res)=>{
-  req.session.destroy((err)=>{
-      console.log(err)
-      res.redirect('/products')
-  })
-}
+exports.postLogout = (req, res) => {
+  req.session.destroy((err) => {
+    console.log(err);
+    res.redirect("/products");
+  });
+};
+
+// Authentication
+// Sign-up page
+exports.getSignUp = (req, res) => {
+  res.render("signup", {
+    isAuthenticated: false,
+  });
+};
+
+exports.postSignUp = (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const confirmPassword = req.body.confirmPassword;
+  User.findOne({ email: email })
+    .then((userdoc) => {
+      if(userdoc){
+       return res.redirect('/signup')
+      }
+      const user = new User({
+        email:email,
+        password:password,
+        cart:{items:[]}
+      })
+      return user.save()
+    })
+    .then(()=>{
+      res.redirect('/login')
+    })
+    .catch((err) => console.log(err));
+};
