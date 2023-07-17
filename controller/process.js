@@ -1,6 +1,8 @@
 const Product = require("../model/model");
 const Order = require("../model/order");
+const user = require("../model/user");
 const User = require("../model/user");
+const bcrypt = require("bcryptjs");
 
 exports.process = (req, res) => {
   res.render("editing", {
@@ -112,7 +114,7 @@ exports.postDeleteProduct = (req, res) => {
 // Geting Cart
 exports.getCarts = (req, res) => {
   req.user
-    .populate("cart.items.productId")
+    .populate('cart.items.productId')
     .then((user) => {
       const products = user.cart.items;
       res.render("cart", {
@@ -129,12 +131,12 @@ exports.getCarts = (req, res) => {
 exports.postcart = (req, res) => {
   const prodId = req.body.productId;
   Product.findById(prodId)
-    .then((product) => {
+    .then(product => {
       return req.user.addToCart(product);
     })
     .then((result) => {
-      res.redirect("/cart");
       console.log(result);
+      res.redirect("/cart");
     })
     .catch((err) => {
       console.log(err);
@@ -208,16 +210,30 @@ exports.getLogin = (req, res) => {
 exports.postLogin = (req, res) => {
   //   req.session.isLoggedIn = true;
   //res.setHeader('Set-Cookie','LoggedIn=true') //setting a cookie
-  User.findById("64acf130b5a4a84d53b26e87")
-    .then((user) => {
-      req.session.isLoggedIn = true;
-      req.session.user = user;
-      req.session.save((err) => {
-        console.log(err);
-        res.redirect("/products");
+  const email = req.body.email;
+  const password = req.body.password;
+  User.findOne({ email: email })
+    .then((userdoc) => {
+      if (!userdoc) {
+        return res.redirect("/login");
+      }
+      // Adding a signin functional
+      bcrypt.compare(password, userdoc.password).then((domatch) => {
+        if (domatch) {
+          req.session.isLoggedIn = true;
+          req.session.user = user;
+          return req.session.save((err) => {
+            console.log(err);
+            res.redirect("/products");
+          });
+        }
+        res.redirect("/login");
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.log(err);
+      res.redirect("/login");
+    });
 };
 
 // Deleteing a Cookie
@@ -242,18 +258,23 @@ exports.postSignUp = (req, res) => {
   const confirmPassword = req.body.confirmPassword;
   User.findOne({ email: email })
     .then((userdoc) => {
-      if(userdoc){
-       return res.redirect('/signup')
+      if (userdoc) {
+        return res.redirect("/signup");
       }
-      const user = new User({
-        email:email,
-        password:password,
-        cart:{items:[]}
-      })
-      return user.save()
+      return bcrypt // encrypt password
+        .hash(password, 12)
+        .then((hashed) => {
+          const user = new User({
+            email: email,
+            password: hashed,
+            cart: { items: [] },
+          });
+          return user.save();
+        })
+        .then(() => {
+          res.redirect("/login");
+        });
     })
-    .then(()=>{
-      res.redirect('/login')
-    })
+
     .catch((err) => console.log(err));
 };
