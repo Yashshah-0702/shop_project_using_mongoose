@@ -11,6 +11,7 @@ const MongoUri =
   "mongodb+srv://Yash_Shah:y_a_s_h@cluster0.h0nmwav.mongodb.net/shop";
 const csrf = require("csurf");
 const csrfProtection = csrf();
+const flash = require('connect-flash')
 const store = new mongodbStore({
   uri: MongoUri,
   collection: "session",
@@ -29,6 +30,9 @@ app.use(
   })
 ); // Sessions
 
+app.use(csrfProtection)
+app.use(flash())
+
 app.use((req, res, next) => {
   if (!req.session.user) {
     return next();
@@ -39,6 +43,11 @@ app.use((req, res, next) => {
       next();
     })
     .catch((err) => console.log(err));
+});
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
 });
 
 app.use(route);

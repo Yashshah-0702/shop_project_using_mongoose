@@ -16,6 +16,7 @@
         <a href="/products/<%= prod._id %>"><button>Details</button></a>
         <%if(isAuthenticated) {%>
         <form action="/delete-product" method="post">
+        <input type="hidden" name="_csrf" value="<%=csrfToken %>">
           <input type="hidden" value="<%=prod._id%>" name="productId">
           <button type="submit">Delete</button>  
         </form>

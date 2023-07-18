@@ -52,7 +52,8 @@ exports.output = (req, res) => {
       res.render("products", {
         products: row,
         editing: false,
-        isAuthenticated: req.session.isLoggedIn,
+        // isAuthenticated: req.session.isLoggedIn,
+        // csrfToken:req.csrfToken()
       });
     })
     .catch((err) => console.log(err));
@@ -169,7 +170,7 @@ exports.postOrder = (req, res) => {
       });
       const order = new Order({
         user: {
-          name: req.user.name,
+          email: req.user.email,
           userId: req.user,
         },
         products: products,
@@ -203,8 +204,15 @@ exports.getOrders = (req, res) => {
 exports.getLogin = (req, res) => {
   //const isLoggedIn = req.get('Cookie').split('=')[1]==='true' // getting cookie
   // const isLoggedIn = req.session.isLoggedIn
+  let message = req.flash('error')
+  if(message.length>0){
+    message = message[0]
+  }else{
+    message=null
+  }
   res.render("login", {
     isAuthenticated: false,
+    errorMessaage:message
   });
 };
 
@@ -215,6 +223,7 @@ exports.postLogin = (req, res) => {
   User.findOne({ email: email })
     .then(user => {
       if (!user) {
+        req.flash('error','Invalid Email or Password')
         return res.redirect('/login');
       }
       bcrypt
@@ -228,6 +237,7 @@ exports.postLogin = (req, res) => {
               res.redirect('/products');
             });
           }
+          req.flash('error','Invalid Email or Password')
           res.redirect('/login');
         })
         .catch(err => {
@@ -249,8 +259,15 @@ exports.postLogout = (req, res) => {
 // Authentication
 // Sign-up page
 exports.getSignUp = (req, res) => {
+  let message = req.flash('error')
+  if(message.length>0){
+    message = message[0]
+  }else{
+    message=null
+  }
   res.render("signup", {
     isAuthenticated: false,
+    errorMessaage:message
   });
 };
 
@@ -261,6 +278,7 @@ exports.postSignUp = (req, res) => {
   User.findOne({ email: email })
     .then(userDoc => {
       if (userDoc) {
+        req.flash('error','E-Mail Already Exixts')
         return res.redirect('/signup');
       }
       return bcrypt
