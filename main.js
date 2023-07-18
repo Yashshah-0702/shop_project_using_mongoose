@@ -47,6 +47,7 @@ app.use(error.page);
 mongoose
   .connect(MongoUri)
   .then((result) => {
+    console.log("Connected to Database...")
     app.listen(7900);
   })
   .catch((err) => console.log(err));
