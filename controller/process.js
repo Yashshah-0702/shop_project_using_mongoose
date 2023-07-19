@@ -322,3 +322,16 @@ exports.postSignUp = (req, res) => {
       console.log(err);
     });
   };
+
+  exports.getReset=(req,res)=>{
+    let message = req.flash('error')
+  if(message.length>0){
+    message = message[0]
+  }else{
+    message=null
+  }
+  res.render("reset", {
+    errorMessaage:message
+  });
+};
+  

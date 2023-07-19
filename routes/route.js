@@ -20,5 +20,6 @@ router.post('/login',control.postLogin)
 router.post('/logout',control.postLogout)
 router.get('/signup',control.getSignUp)
 router.post('/signup', control.postSignUp);
+router.get('/reset',control.getReset)
 
 module.exports =router
