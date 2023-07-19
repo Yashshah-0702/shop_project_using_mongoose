@@ -2,6 +2,16 @@ const Product = require("../model/model");
 const Order = require("../model/order");
 const User = require("../model/user");
 const bcrypt = require("bcryptjs");
+const nodemailer = require('nodemailer')
+
+// sending mail
+let transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "yash72200002@gmail.com",
+    pass: "xszbemuusaprolkp",
+  },
+});
 
 exports.process = (req, res) => {
   res.render("editing", {
@@ -235,6 +245,12 @@ exports.postLogin = (req, res) => {
             return req.session.save(err => {
               console.log(err);
               res.redirect('/products');
+              return transporter.sendMail({
+                to: email,
+                from: "yash72200002@gmail.com",
+                subject: "Login Succedded!",
+                html: "<h1>You have successfully Login in website...!</h1>"
+              })
             });
           }
           req.flash('error','Invalid Email or Password')
@@ -293,6 +309,13 @@ exports.postSignUp = (req, res) => {
         })
         .then(result => {
           res.redirect('/login');
+          // email sending
+          return transporter.sendMail({
+            to: email,
+            from: "yash72200002@gmail.com",
+            subject: "SignUp Succedded!",
+            html: "<h1>You have successfully signed up.</h1>"
+          })
         });
     })
     .catch(err => {
