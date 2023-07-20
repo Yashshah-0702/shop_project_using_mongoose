@@ -7,6 +7,7 @@ router.get('/',isAuth,control.process)
 router.get('/products/:productId',isAuth,control.getProduct)
 router.get('/products',control.output)
 router.post('/items',isAuth,control.items)
+router.get('/prod',control.getShop)
 router.post('/cart',isAuth,control.postcart)
 router.get('/order',isAuth,control.getOrders)
 router.get('/editproducts/:productId',isAuth,control.editProduct)
@@ -21,5 +22,8 @@ router.post('/logout',control.postLogout)
 router.get('/signup',control.getSignUp)
 router.post('/signup', control.postSignUp);
 router.get('/reset',control.getReset)
+router.post('/reset',control.postReset)
+router.get('/reset/:token',control.getNewPassword)
+router.post('/newpassword',control.postNewPassword)
 
 module.exports =router
