@@ -8,7 +8,8 @@ const User = require("./model/user");
 const session = require("express-session");
 const mongodbStore = require("connect-mongodb-session")(session);
 const MongoUri =
-  "mongodb+srv://Yash_Shah:y_a_s_h@cluster0.h0nmwav.mongodb.net/shop";
+  // "mongodb+srv://Yash_Shah:y_a_s_h@cluster0.h0nmwav.mongodb.net/shop";
+  "mongodb://localhost:27017/"
 const csrf = require("csurf");
 const csrfProtection = csrf();
 const flash = require('connect-flash')
