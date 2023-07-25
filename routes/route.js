@@ -87,5 +87,6 @@ router.get("/reset", control.getReset);
 router.post("/reset", control.postReset);
 router.get("/reset/:token", control.getNewPassword);
 router.post("/newpassword", control.postNewPassword);
+router.get('/orders/:orderId',isAuth,control.getInvoice)
 
 module.exports = router;

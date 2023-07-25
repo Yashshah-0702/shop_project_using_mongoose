@@ -5,6 +5,9 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { validationResult } = require("express-validator");
+const fs = require('fs')
+const path=require('path')
+
 // const { next } = require("process");
 
 // sending mail
@@ -585,3 +588,15 @@ exports.postNewPassword = (req, res, next) => {
       next(error);
     });
 };
+
+exports.getInvoice=(req,res,next)=>{
+  const orderId = req.params.orderId;
+  const invoiceName = 'invoice-'+orderId+'.pdf'
+  const invoicePath = path.join("data",invoiceName)
+  fs.readFile(invoicePath,(err,data)=>{
+    if(err){
+     return next(err)
+    }
+    res.send(data)
+  })
+}
