@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { validationResult } = require("express-validator");
-const { nextTick } = require("process");
+// const { next } = require("process");
 
 // sending mail
 let transporter = nodemailer.createTransport({
@@ -16,7 +16,7 @@ let transporter = nodemailer.createTransport({
   },
 });
 
-exports.process = (req, res) => {
+exports.process = (req, res, next) => {
   res.render("editing", {
     editing: false,
     hasErrors: false,
@@ -26,24 +26,42 @@ exports.process = (req, res) => {
 };
 
 // Adding a Product (Create)
-exports.items = (req, res) => {
+exports.items = (req, res, next) => {
   const title = req.body.title;
   const price = req.body.price;
   const description = req.body.description;
+  const image = req.file;
+  // console.log(image)
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
+  if (!image) {
     return res.status(422).render("editing", {
       editing: false,
       hasErrors: true,
       product: { title: title, price: price, description: description },
+      errorMessaage: "Attached file is not an Image..",
+      // isAuthenticated: req.session.isLoggedIn,
+    });
+  }
+  if (!errors.isEmpty()) {
+    return res.status(422).render("editing", {
+      editing: false,
+      hasErrors: true,
+      product: {
+        title: title,
+        price: price,
+        description: description,
+        imageUrl: imageUrl,
+      },
       errorMessaage: errors.array()[0].msg,
       // isAuthenticated: req.session.isLoggedIn,
     });
   }
+  const imageUrl = image.path;
   const product = new Product({
     title: title,
     price: price,
     description: description,
+    imageUrl: imageUrl,
     userId: req.user,
   });
   product
@@ -56,12 +74,12 @@ exports.items = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // Reading A Single Product (Read)
-exports.getProduct = (req, res) => {
+exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
   // Product.findAll({where:{id:prodId}}).then(product=>{
   //   res.render('details',{product:product[0]})}).catch(err=>console.log(err))
@@ -75,12 +93,12 @@ exports.getProduct = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      return next(error);
     });
 };
 
 // Reading All Product (Read)
-exports.output = (req, res) => {
+exports.output = (req, res, next) => {
   Product.find({ userId: req.user._id })
     // Product.find()
     .then((row) => {
@@ -94,11 +112,11 @@ exports.output = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
-exports.getShop = (req, res) => {
+exports.getShop = (req, res, next) => {
   Product.find().then((row) => {
     res.render("shop_prod", { products: row });
   });
@@ -106,13 +124,15 @@ exports.getShop = (req, res) => {
 
 // Editing A product(Update)
 // it is used for posting editing details in databse
-exports.postEditProduct = (req, res) => {
+exports.postEditProduct = (req, res, next) => {
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedPrice = req.body.price;
   const updatedDesc = req.body.description;
+  const image = req.file;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log(errors.array());
     return res.status(422).render("editing", {
       editing: true,
       hasErrors: true,
@@ -129,26 +149,29 @@ exports.postEditProduct = (req, res) => {
   Product.findById(prodId)
     .then((product) => {
       if (product.userId.toString() !== req.user._id.toString()) {
-        return res.redirect("/prod");
+        return res.redirect("/products");
       }
       product.title = updatedTitle;
       product.price = updatedPrice;
       product.description = updatedDesc;
+      if (image) {
+        product.imageUrl = image.path;
+      }
       return product.save().then((result) => {
         console.log("Updated...");
-        res.redirect("/prod");
+        res.redirect("/products");
       });
     })
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // When user click on edit this will showed to user and helps it to edit page
 // it is used for get
-exports.editProduct = (req, res) => {
+exports.editProduct = (req, res, next) => {
   const editMode = req.query.edit;
   if (!editMode) {
     return res.redirect("/");
@@ -166,16 +189,17 @@ exports.editProduct = (req, res) => {
         errorMessaage: null,
         isAuthenticated: req.session.isLoggedIn,
       });
+      console.log(product);
     })
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // // Deleting A product(Delete)
-exports.postDeleteProduct = (req, res) => {
+exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
   // Product.findByIdAndRemove(prodId)
   Product.deleteOne({ _id: prodId, userId: req.user._id })
@@ -186,13 +210,13 @@ exports.postDeleteProduct = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // Cart Side
 // Geting Cart
-exports.getCarts = (req, res) => {
+exports.getCarts = (req, res, next) => {
   req.user
     .populate("cart.items.productId")
     .then((user) => {
@@ -205,12 +229,12 @@ exports.getCarts = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // Storing product in cart
-exports.postcart = (req, res) => {
+exports.postcart = (req, res, next) => {
   const prodId = req.body.productId;
   Product.findById(prodId)
     .then((product) => {
@@ -223,12 +247,12 @@ exports.postcart = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // Delete Cart
-exports.postcartdelete = (req, res) => {
+exports.postcartdelete = (req, res, next) => {
   const prodId = req.body.productId;
   req.user
     .deleteItemFromCart(prodId)
@@ -238,13 +262,13 @@ exports.postcartdelete = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // // Order Side
 
-exports.postOrder = (req, res) => {
+exports.postOrder = (req, res, next) => {
   req.user
     .populate("cart.items.productId")
     .then((user) => {
@@ -269,11 +293,11 @@ exports.postOrder = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
-exports.getOrders = (req, res) => {
+exports.getOrders = (req, res, next) => {
   Order.find({ "user.userId": req.user._id })
     .then((orders) => {
       res.render("order", {
@@ -284,13 +308,13 @@ exports.getOrders = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // Session & Cookies
 // Login Page
-exports.getLogin = (req, res) => {
+exports.getLogin = (req, res, next) => {
   //const isLoggedIn = req.get('Cookie').split('=')[1]==='true' // getting cookie
   // const isLoggedIn = req.session.isLoggedIn
   let message = req.flash("error");
@@ -311,7 +335,7 @@ exports.getLogin = (req, res) => {
 };
 
 // postlogin
-exports.postLogin = (req, res) => {
+exports.postLogin = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const errors = validationResult(req);
@@ -374,12 +398,12 @@ exports.postLogin = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // Deleteing a Cookie
-exports.postLogout = (req, res) => {
+exports.postLogout = (req, res, next) => {
   req.session.destroy((err) => {
     console.log(err);
     res.redirect("/prod");
@@ -388,7 +412,7 @@ exports.postLogout = (req, res) => {
 
 // Authentication
 // Sign-up page
-exports.getSignUp = (req, res) => {
+exports.getSignUp = (req, res, next) => {
   let message = req.flash("error");
   if (message.length > 0) {
     message = message[0];
@@ -407,7 +431,7 @@ exports.getSignUp = (req, res) => {
   });
 };
 
-exports.postSignUp = (req, res) => {
+exports.postSignUp = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const error = validationResult(req);
@@ -447,13 +471,13 @@ exports.postSignUp = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
 // Advance Authentication
 // getreset
-exports.getReset = (req, res) => {
+exports.getReset = (req, res, next) => {
   let message = req.flash("error");
   if (message.length > 0) {
     message = message[0];
@@ -465,7 +489,7 @@ exports.getReset = (req, res) => {
   });
 };
 // postreset
-exports.postReset = (req, res) => {
+exports.postReset = (req, res, next) => {
   crypto.randomBytes(32, (err, buffer) => {
     if (err) {
       console.log(err);
@@ -497,12 +521,12 @@ exports.postReset = (req, res) => {
       .catch((err) => {
         const error = new Error(err);
         error.httpStatusCode = 500;
-        nextTick(error);
+        next(error);
       });
   });
 };
 
-exports.getNewPassword = (req, res) => {
+exports.getNewPassword = (req, res, next) => {
   const token = req.params.token;
   User.findOne({ resetToken: token, resetTokenExpirtion: { $gt: Date.now() } })
     .then((user) => {
@@ -521,11 +545,11 @@ exports.getNewPassword = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
 
-exports.postNewPassword = (req, res) => {
+exports.postNewPassword = (req, res, next) => {
   const newPassword = req.body.password;
   const userId = req.body.userId;
   const passwordToken = req.body.passwordToken;
@@ -558,7 +582,6 @@ exports.postNewPassword = (req, res) => {
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
-      nextTick(error);
+      next(error);
     });
 };
-

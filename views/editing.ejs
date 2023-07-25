@@ -7,9 +7,11 @@
         <h1 style="color: red; border: 2px solid red; background-color: rgb(255, 140, 120); text-align: center;"> <%=errorMessaage%> </h1>
       </div>
     <% } %>
-    <form action="/<% if (editing) { %>edit-product<% } else { %>items<% } %>" method="post" style="text-align: center;" >
+    <form action="/<% if (editing) { %>edit-product<% } else { %>items<% } %>" method="post" style="text-align: center;" enctype="multipart/form-data" >
         <label for="title">Enter Name Of Product:-</label> <br>
         <input type="text" name="title" value="<% if(editing || hasErrors) {%> <%=product.title%> <%}%>"> <br> <br>
+        <label for="image">Upload Image Url:-</label> <br>
+        <input type="file" name="image" id="image"> <br> <br>
         <label for="image">Enter Description:-</label> <br>
         <textarea name="description" id="" cols="30" rows="4"> <% if(editing || hasErrors) {%> <%=product.description%> <% } %></textarea> <br> <br>
         <label for="image">Enter Price:-</label> <br>

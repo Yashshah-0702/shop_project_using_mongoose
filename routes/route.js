@@ -10,17 +10,17 @@ router.get("/products/:productId", isAuth, control.getProduct);
 router.get("/products", control.output);
 router.post("/items",[
   body("title").isString().isLength({min:3}).trim(),
-  body("price").isFloat().trim(),
+  body("price").trim().isFloat(),
   body("description").isLength({min:5,max:400}).trim()
 ], isAuth, control.items);
 router.get("/prod", control.getShop);
 router.post("/cart", isAuth, control.postcart);
 router.get("/order", isAuth, control.getOrders);
-router.get("/editproducts/:productId", isAuth, control.editProduct);
+router.get("/editproducts/:productId",isAuth, control.editProduct);
 router.post("/edit-product",[
   body("title").isString().isLength({min:3}).trim(),
-  body("price").isFloat(),
-  body("description").isLength({min:5,max:400}).trim()
+  body("description").isLength({min:5,max:400}).trim(),
+  body("price").isFloat().trim()
 ], isAuth, control.postEditProduct);
 router.post("/delete-product", isAuth, control.postDeleteProduct);
 router.get("/cart", isAuth, control.getCarts);
