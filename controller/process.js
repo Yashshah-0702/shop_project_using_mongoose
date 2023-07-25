@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { validationResult } = require("express-validator");
+const { nextTick } = require("process");
 
 // sending mail
 let transporter = nodemailer.createTransport({
@@ -18,16 +19,31 @@ let transporter = nodemailer.createTransport({
 exports.process = (req, res) => {
   res.render("editing", {
     editing: false,
-    isAuthenticated: req.session.isLoggedIn,
+    hasErrors: false,
+    errorMessaage: null,
+    // isAuthenticated: req.session.isLoggedIn,
   });
 };
 
 // Adding a Product (Create)
 exports.items = (req, res) => {
+  const title = req.body.title;
+  const price = req.body.price;
+  const description = req.body.description;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).render("editing", {
+      editing: false,
+      hasErrors: true,
+      product: { title: title, price: price, description: description },
+      errorMessaage: errors.array()[0].msg,
+      // isAuthenticated: req.session.isLoggedIn,
+    });
+  }
   const product = new Product({
-    title: req.body.title,
-    price: req.body.price,
-    description: req.body.description,
+    title: title,
+    price: price,
+    description: description,
     userId: req.user,
   });
   product
@@ -38,7 +54,9 @@ exports.items = (req, res) => {
     })
 
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
     });
 };
 
@@ -54,7 +72,11 @@ exports.getProduct = (req, res) => {
         isAuthenticated: req.session.isLoggedIn,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
+    });
 };
 
 // Reading All Product (Read)
@@ -69,7 +91,11 @@ exports.output = (req, res) => {
         // csrfToken:req.csrfToken()
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
+    });
 };
 
 exports.getShop = (req, res) => {
@@ -85,6 +111,21 @@ exports.postEditProduct = (req, res) => {
   const updatedTitle = req.body.title;
   const updatedPrice = req.body.price;
   const updatedDesc = req.body.description;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).render("editing", {
+      editing: true,
+      hasErrors: true,
+      product: {
+        title: updatedTitle,
+        price: updatedPrice,
+        description: updatedDesc,
+        _id: prodId,
+      },
+      errorMessaage: errors.array()[0].msg,
+      // isAuthenticated: req.session.isLoggedIn,
+    });
+  }
   Product.findById(prodId)
     .then((product) => {
       if (product.userId.toString() !== req.user._id.toString()) {
@@ -98,7 +139,11 @@ exports.postEditProduct = (req, res) => {
         res.redirect("/prod");
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
+    });
 };
 
 // When user click on edit this will showed to user and helps it to edit page
@@ -117,10 +162,16 @@ exports.editProduct = (req, res) => {
       res.render("editing", {
         editing: editMode,
         product: product,
+        hasErrors: false,
+        errorMessaage: null,
         isAuthenticated: req.session.isLoggedIn,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
+    });
 };
 
 // // Deleting A product(Delete)
@@ -132,7 +183,11 @@ exports.postDeleteProduct = (req, res) => {
       console.log("Product Deleted");
       res.redirect("/products");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
+    });
 };
 
 // Cart Side
@@ -148,7 +203,9 @@ exports.getCarts = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
     });
 };
 
@@ -164,7 +221,9 @@ exports.postcart = (req, res) => {
       res.redirect("/cart");
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
     });
 };
 
@@ -177,7 +236,9 @@ exports.postcartdelete = (req, res) => {
       res.redirect("/cart");
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
     });
 };
 
@@ -206,7 +267,9 @@ exports.postOrder = (req, res) => {
       res.redirect("/order");
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
     });
 };
 
@@ -218,7 +281,11 @@ exports.getOrders = (req, res) => {
         isAuthenticated: req.session.isLoggedIn,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
+    });
 };
 
 // Session & Cookies
@@ -236,10 +303,10 @@ exports.getLogin = (req, res) => {
     isAuthenticated: false,
     errorMessaage: message,
     oldInput: {
-      email: '',
-      password: ''
+      email: "",
+      password: "",
     },
-    validationErrors: []
+    validationErrors: [],
   });
 };
 
@@ -249,27 +316,27 @@ exports.postLogin = (req, res) => {
   const password = req.body.password;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).render('login', {
+    return res.status(422).render("login", {
       isAuthenticated: false,
       errorMessaage: errors.array()[0].msg,
       oldInput: {
         email: email,
-        password: password
+        password: password,
       },
-      validationErrors: errors.array()
+      validationErrors: errors.array(),
     });
   }
   User.findOne({ email: email })
     .then((user) => {
       if (!user) {
-        return res.status(422).render('login', {
+        return res.status(422).render("login", {
           isAuthenticated: false,
           errorMessaage: errors.array()[0].msg,
           oldInput: {
             email: email,
-            password: password
+            password: password,
           },
-          validationErrors: []
+          validationErrors: [],
         });
       }
       bcrypt
@@ -289,14 +356,14 @@ exports.postLogin = (req, res) => {
               });
             });
           }
-          return res.status(422).render('login', {
+          return res.status(422).render("login", {
             isAuthenticated: false,
             errorMessaage: errors.array()[0].msg,
             oldInput: {
               email: email,
-              password: password
+              password: password,
             },
-            validationErrors: []
+            validationErrors: [],
           });
         })
         .catch((err) => {
@@ -304,7 +371,11 @@ exports.postLogin = (req, res) => {
           res.redirect("/login");
         });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
+    });
 };
 
 // Deleteing a Cookie
@@ -328,11 +399,11 @@ exports.getSignUp = (req, res) => {
     isAuthenticated: false,
     errorMessaage: message,
     oldInput: {
-      email: '',
-      password: '',
-      confirmPassword: ''
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
-    validationErrors:[]
+    validationErrors: [],
   });
 };
 
@@ -348,9 +419,9 @@ exports.postSignUp = (req, res) => {
       oldInput: {
         email: email,
         password: password,
-        confirmPassword: req.body.confirmPassword
+        confirmPassword: req.body.confirmPassword,
       },
-    validationErrors:error.array()
+      validationErrors: error.array(),
     });
   }
   bcrypt
@@ -374,7 +445,9 @@ exports.postSignUp = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
     });
 };
 
@@ -422,7 +495,9 @@ exports.postReset = (req, res) => {
         });
       })
       .catch((err) => {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        nextTick(error);
       });
   });
 };
@@ -443,7 +518,11 @@ exports.getNewPassword = (req, res) => {
         passwordToken: token,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
+    });
 };
 
 exports.postNewPassword = (req, res) => {
@@ -476,7 +555,10 @@ exports.postNewPassword = (req, res) => {
       //       <p>You Have Succefully Resetted Password...!</p>`
       // })
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      nextTick(error);
+    });
 };
 
-// Validation

@@ -8,12 +8,20 @@ const User = require("../model/user");
 router.get("/", isAuth, control.process);
 router.get("/products/:productId", isAuth, control.getProduct);
 router.get("/products", control.output);
-router.post("/items", isAuth, control.items);
+router.post("/items",[
+  body("title").isString().isLength({min:3}).trim(),
+  body("price").isFloat().trim(),
+  body("description").isLength({min:5,max:400}).trim()
+], isAuth, control.items);
 router.get("/prod", control.getShop);
 router.post("/cart", isAuth, control.postcart);
 router.get("/order", isAuth, control.getOrders);
 router.get("/editproducts/:productId", isAuth, control.editProduct);
-router.post("/edit-product", isAuth, control.postEditProduct);
+router.post("/edit-product",[
+  body("title").isString().isLength({min:3}).trim(),
+  body("price").isFloat(),
+  body("description").isLength({min:5,max:400}).trim()
+], isAuth, control.postEditProduct);
 router.post("/delete-product", isAuth, control.postDeleteProduct);
 router.get("/cart", isAuth, control.getCarts);
 router.post("/cart-delete-item", isAuth, control.postcartdelete);

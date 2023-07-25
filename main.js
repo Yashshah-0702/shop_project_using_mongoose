@@ -33,6 +33,11 @@ app.use(
 
 app.use(csrfProtection)
 app.use(flash())
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 
 app.use((req, res, next) => {
   if (!req.session.user) {
@@ -40,20 +45,26 @@ app.use((req, res, next) => {
   }
   User.findById(req.session.user._id)
     .then((user) => {
+      // throw new Error('dummy')
+      if(!user){
+        return next();
+      }
       req.user = user;
       next();
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {next(new Error(err))});
 });
-app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken();
-  next();
-});
+
 
 app.use(route);
+app.get('/500',error.page500)
 app.use(error.page);
-
+app.use((error,req,res,next)=>{
+  // res.redirect('/500')
+  res.status(500).render("505", {
+    isAuthenticated: req.session.isLoggedIn,
+  });
+})
 mongoose
   .connect(MongoUri)
   .then((result) => {

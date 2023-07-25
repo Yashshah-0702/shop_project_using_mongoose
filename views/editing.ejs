@@ -2,13 +2,18 @@
 
 
   <main> 
+    <%if(errorMessaage) {%>
+      <div>
+        <h1 style="color: red; border: 2px solid red; background-color: rgb(255, 140, 120); text-align: center;"> <%=errorMessaage%> </h1>
+      </div>
+    <% } %>
     <form action="/<% if (editing) { %>edit-product<% } else { %>items<% } %>" method="post" style="text-align: center;" >
         <label for="title">Enter Name Of Product:-</label> <br>
-        <input type="text" name="title" value="<% if(editing) {%> <%=product.title%> <%}%>"> <br> <br>
+        <input type="text" name="title" value="<% if(editing || hasErrors) {%> <%=product.title%> <%}%>"> <br> <br>
         <label for="image">Enter Description:-</label> <br>
-        <textarea name="description" id="" cols="30" rows="4"> <% if(editing) {%> <%=product.description%> <% } %></textarea> <br> <br>
+        <textarea name="description" id="" cols="30" rows="4"> <% if(editing || hasErrors) {%> <%=product.description%> <% } %></textarea> <br> <br>
         <label for="image">Enter Price:-</label> <br>
-        <input type="text" name="price" value="<% if(editing) {%> <%=product.price%> <%}%>"> <br> <br>
+        <input type="text" name="price" value="<% if(editing || hasErrors) {%> <%=product.price%> <%}%>"> <br> <br>
         <% if(editing) { %>
             <input type="hidden" value="<%= product._id%>" name="productId">
         <% } %>
