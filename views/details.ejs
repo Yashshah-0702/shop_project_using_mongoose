@@ -1,9 +1,9 @@
 <%-include('./layout/main.ejs') %>
 
 
-  <main style="display: flex; flex-flow: column;">
-    <div style="border: 2px solid black; margin: 20px; padding: 20px;">
-    <img src="/<%= product.imageUrl%>" alt="<%=product.title%>">
+  <main style="display: flex; flex-flow: row; width: 80px;">
+    <div style="border: 2px solid black; margin: 20px; padding: 20px; height: 340px;">
+    <img src="/<%= product.imageUrl%>" alt="<%=product.title%>" width="150px" height="100px">
     <h1><%= product.title%></h1>
     <h3><%= product.description%></h3>
     <h4><%= product.price%></h4>

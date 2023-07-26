@@ -5,8 +5,10 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { validationResult } = require("express-validator");
-const fs = require('fs')
-const path=require('path')
+const fs = require("fs");
+const path = require("path");
+const pdfDocument = require('pdfkit')
+const fileHelper = require('../utiil/file')
 
 // const { next } = require("process");
 
@@ -158,6 +160,7 @@ exports.postEditProduct = (req, res, next) => {
       product.price = updatedPrice;
       product.description = updatedDesc;
       if (image) {
+        fileHelper.deleteFile(product.imageUrl)
         product.imageUrl = image.path;
       }
       return product.save().then((result) => {
@@ -205,16 +208,21 @@ exports.editProduct = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
   // Product.findByIdAndRemove(prodId)
-  Product.deleteOne({ _id: prodId, userId: req.user._id })
-    .then(() => {
-      console.log("Product Deleted");
-      res.redirect("/products");
-    })
-    .catch((err) => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      next(error);
-    });
+  Product.findById(prodId).then(product=>{
+    if(!product){
+      throw new Error("Product not found...")
+    }
+    fileHelper.deleteFile(product.imageUrl)
+    return Product.deleteOne({ _id: prodId, userId: req.user._id })
+  }).then(() => {
+    console.log("Product Deleted");
+    res.redirect("/products");
+  })
+  .catch((err) => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    next(error);
+  });  
 };
 
 // Cart Side
@@ -589,14 +597,60 @@ exports.postNewPassword = (req, res, next) => {
     });
 };
 
-exports.getInvoice=(req,res,next)=>{
+exports.getInvoice = (req, res, next) => {
   const orderId = req.params.orderId;
-  const invoiceName = 'invoice-'+orderId+'.pdf'
-  const invoicePath = path.join("data",invoiceName)
-  fs.readFile(invoicePath,(err,data)=>{
-    if(err){
-     return next(err)
+  Order.findById(orderId).then((order) => {
+    if (!order) {
+      return next(new Error("No order found."));
     }
-    res.send(data)
+    if (order.user.userId.toString() !== req.user._id.toString()) {
+      return next(new Error("Unauthorized"));
+    }
+    const invoiceName = "invoice-" + orderId + ".pdf";
+    const invoicePath = path.join("data", invoiceName);
+    const pdfdoc = new pdfDocument()
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="' + invoiceName + '"'
+    );
+    pdfdoc.pipe(fs.createWriteStream(invoicePath))
+    pdfdoc.pipe(res)
+    pdfdoc.fontSize(26).text('Invoice Generated...!',{
+      underline:true
+    })
+    pdfdoc.text('________________________________')
+    pdfdoc.text("  ")
+    let totalPrice=0
+    order.products.forEach(prod=>{
+      totalPrice += prod.quantity * prod.product.price
+      pdfdoc.fontSize(14).text(prod.product.title + ' - ' + prod.quantity + ' x ' + ' $ ' + prod.product.price)
+    })
+    pdfdoc.fontSize(26).text('________________________________')
+    pdfdoc.text("  ")
+    pdfdoc.fontSize(20).text('Total Price : $'+totalPrice)
+    pdfdoc.end()
+    // Normal Way
+    // fs.readFile(invoicePath, (err, data) => {
+    //   if (err) {
+    //     return next(err);
+    //   }
+    //   res.setHeader("Content-Type", "application/pdf");
+    //   res.setHeader(
+    //     "Content-Disposition",
+    //     'inline; filename="' + invoiceName + '"'
+    //   );
+    //   res.send(data);
+    // });
+    // Stream data
+    // const file = fs.createReadStream(invoicePath)
+    // res.setHeader("Content-Type", "application/pdf");
+    //   res.setHeader(
+    //     "Content-Disposition",
+    //     'inline; filename="' + invoiceName + '"'
+    //   );
+    //   // res.send(data)
+    //   file.pipe(res)
   })
-}
+  .catch(err=>console.log(err))
+};

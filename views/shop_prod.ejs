@@ -1,12 +1,19 @@
 <%-include('./layout/main.ejs') %>
 
 
-  <main style="display: flex; flex-flow: row;">
+  <main >
    <% if(products.length>0) { %>
-    <div>
+    <div style="display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+    
+    grid-auto-rows: auto;
+    
+    grid-gap: 1rem; 
+    width: 80px;">
     <% for(let prod of products) { %>
-      <div style="border: 2px solid black; margin: 20px; padding: 20px;">
-        <img src="/<%= prod.imageUrl%>" alt="<%= prod.title%>">
+      <div style="border: 2px solid black; margin: 20px; padding: 20px; height: 340px;">
+        <img src="/<%= prod.imageUrl%>" alt="<%= prod.title%>" width="150px" height="100px">
         <h1> <%= prod.title%> </h1>
         <h3>$ <%= prod.price %></h3>   
         <h4> <%= prod.description%></h4>

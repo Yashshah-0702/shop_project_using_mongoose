@@ -6,7 +6,7 @@
     <% if(products.length > 0) { %>
        <ul>
           <%products.forEach(p=>{%>
-            <li><%= p.productId.title %> (<%= p.quantity %>)</li>
+            <li><%= p.productId.title %> (<%= p.quantity %>) </li>
             <form action="/cart-delete-item" method="post">
               <input type="hidden" name="_csrf" value="<%=csrfToken %>">
                 <input type="hidden" value="<%= p.productId._id %>" name="productId">

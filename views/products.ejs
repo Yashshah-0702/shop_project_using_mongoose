@@ -1,12 +1,19 @@
 <%-include('./layout/main.ejs') %>
 
 
-  <main style="display: flex; flex-flow: row;">
+  <main style="display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+  
+  grid-auto-rows: auto;
+  
+  grid-gap: 1rem; width: 80px;">
    <% if(products.length>0) { %>
     <div>
     <% for(let prod of products) { %>
-      <div style="border: 2px solid black; margin: 20px; padding: 20px;">
-        <img src="/<%= prod.imageUrl%>" alt="<%= prod.title%>">
+      <div style="border: 2px solid black; margin: 20px; padding: 20px;  height: 340px;">
+        <img src="/<%= prod.imageUrl%>" alt="<%= prod.title%>" width="150px" height="100px">
+        <div>
         <h1> <%= prod.title%> </h1>
         <h3>$ <%= prod.price %></h3>   
         <h4> <%= prod.description%></h4>
@@ -20,6 +27,7 @@
         <input type="hidden" name="_csrf" value="<%=csrfToken %>">
           <input type="hidden" value="<%=prod._id%>" name="productId">
           <button type="submit">Delete</button>  
+        </div>
         </form>
         <%}%>
       </div>
